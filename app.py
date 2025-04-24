@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 import numpy as np
 
 # Load the LSTM model
