@@ -1,29 +1,31 @@
-from flask import Flask, render_template, request
+import streamlit as st
 from tensorflow.keras.models import load_model
 import numpy as np
 
 # Load the LSTM model
-model = load_model('food_delivery_model.keras')   # <-- changed .h5 to .keras
+model = load_model('food_delivery_model.keras')
 
-app = Flask(__name__)
+# Title of the Streamlit app
+st.title("Food Delivery Time Prediction")
 
-@app.route('/')
-def home():
-    return render_template('index.html')  # simple input form
+# Create a form for user input
+st.subheader("Enter Details")
+with st.form(key='prediction_form'):
+    age = st.number_input("Age", min_value=0, step=1)
+    rating = st.number_input("Rating", min_value=0.0, max_value=5.0, step=0.1)
+    distance = st.number_input("Distance (in meters)", min_value=0, step=1)
+    submit_button = st.form_submit_button(label="Predict")
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    age = int(request.form['age'])
-    rating = float(request.form['rating'])
-    distance = int(request.form['distance'])
-
+# Process prediction when the form is submitted
+if submit_button:
+    # Prepare input features
     features = np.array([[age, rating, distance]])
-    features = features.reshape((features.shape[0], features.shape[1], 1))   # reshape for LSTM!
+    features = features.reshape((features.shape[0], features.shape[1], 1))  # Reshape for LSTM
 
+    # Make prediction
     prediction = model.predict(features)
     predicted_time = prediction[0][0]
 
-    return render_template('index.html', prediction_text=f'Predicted Delivery Time: {predicted_time:.2f} minutes')
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    # Display prediction
+    st.subheader("Prediction")
+    st.write(f"Predicted Delivery Time: {predicted_time:.2f} minutes")
